@@ -6,16 +6,15 @@ import { removeToDoAtom } from "../atoms";
 
 const Card = styled.div<{isDragging:boolean}>`
   position: relative;
-  border-radius: 20px;
-  min-height: 80px;
-  margin-bottom: 5px;
-  padding: 10px 10px;
-  background-color: ${(props) => props.isDragging ? "#74b9ff" : props.theme.cardColor};
-  box-shadow: ${(props) => props.isDragging ? "0px 2px 5px rgba(0, 0, 0, 0.05)" : "none"};
-  &:hover button {
-    opacity: 1;
-    visibility: visible;
-  }
+  background: ${({theme})=>theme.cardBg};
+  border: 1px solid ${({theme})=>theme.cardBorder};
+  border-radius: ${({theme})=>theme.rCard};
+  box-shadow: ${({theme})=>theme.shCard};
+  padding: 12px; margin-bottom: 10px;
+  transition: transform .15s ease, box-shadow .15s ease;
+  &:hover { transform: translateY(-1px); }
+  &:hover button { opacity:1; visibility:visible; }
+  font-family: 'YoonchoUsanChildrenS', cursive;
 `;
 
 const Button = styled.button`
@@ -34,6 +33,15 @@ const Button = styled.button`
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0.2s ease;
+`;
+
+const Close = styled.button`
+  position: absolute; top: 6px; right: 6px;
+  width: 18px; height: 18px; border-radius: 6px;
+  background: #CFF09E; color: #2E2A24;
+  border: none; font-size: 12px; line-height: 18px;
+  cursor: pointer; opacity:0; visibility:hidden; transition:.15s;
+  &:hover{ background:#BEE77F; }
 `;
 
 interface IDraggableCardProps {
@@ -59,7 +67,7 @@ function DraggableCard({toDoId, toDoText, index, boardId}: IDraggableCardProps) 
           {...provided.draggableProps}
         >
           {toDoText}
-          <Button onClick={handleDelete}>❌</Button>
+          <Close onClick={handleDelete}>X</Close>
         </Card>
       )}
     </Draggable>

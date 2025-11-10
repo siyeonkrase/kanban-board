@@ -11,9 +11,10 @@ interface IToDoState {
 }
 
 export const toDoState = atomWithStorage<IToDoState>("board", {
-  "To Do": [],
-  Doing: [],
-  Done: [],
+  Monday: [],
+  Tuseday: [],
+  Wednesday: [],
+  Thursday: [],
 });
 
 // export const addToDoAtom = atom(
@@ -63,3 +64,34 @@ export const resetBoardAtom = atom(null, (_get, set) => {
     Done: [],
   });
 });
+
+export const removeBoardAtom = atom(null, (get, set, boardId: string) => {
+  const board = structuredClone(get(toDoState));
+  if (!board[boardId]) return;
+  delete board[boardId];
+  set(toDoState, board);
+});
+
+const uniqueName = (obj: Record<string, unknown>, base: string) => {
+  if (!obj[base]) return base;
+  let i = 1;
+  while (obj[`${base} (${i})`]) i++;
+  return `${base} (${i})`;
+};
+
+export const renameBoardAtom = atom(
+  null,
+  (get, set, { oldId, newId }: { oldId: string; newId: string }) => {
+    const board = structuredClone(get(toDoState));
+    const src = (oldId ?? "").trim();
+    let dst = (newId ?? "").trim();
+    if (!src || !board[src]) return;
+    if (!dst || src === dst) return;
+
+    if (board[dst]) dst = uniqueName(board, dst);
+
+    board[dst] = board[src];
+    delete board[src];
+    set(toDoState, board);
+  }
+);

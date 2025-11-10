@@ -59,8 +59,13 @@ function App() {
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
         <Boards>
-          {Object.keys(toDos).map(boardId => (
-            <Board boardId={boardId} key={boardId} toDos={toDos[boardId]} />
+          {Object.keys(toDos).map((boardId, idx) => (
+            <Board
+              key={boardId}
+              boardId={boardId}
+              boardIndex={idx}
+              toDos={toDos[boardId]}
+            />
           ))}
         </Boards>
       </Wrapper>

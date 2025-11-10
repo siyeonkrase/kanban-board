@@ -1,185 +1,257 @@
-import { useForm } from "react-hook-form"
+import { useForm } from "react-hook-form";
 import { Droppable } from "@hello-pangea/dnd";
 import DraggableCard from "./DraggableCard";
-import styled from "styled-components";
-import { IToDo, toDoState } from "../atoms";
+import styled, { css, useTheme } from "styled-components";
+import { IToDo, toDoState, removeBoardAtom, renameBoardAtom } from "../atoms";
 import { useSetAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getAccent } from "../colorMap";
+import ConfirmModal from "./ConfirmModal";
 
 const Wrapper = styled.div`
-  width: 300px;
-  padding-top: 10px;
-  background-color: ${(props) => props.theme.boardColor};
-  border-radius: 20px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  margin: 0% 1%;
+  width: 320px; min-height: 360px;
+  padding: 14px 14px 18px;
+  background: ${({theme})=>theme.boardBg};
+  border: 1px solid ${({theme})=>theme.boardBorder};
+  border-radius: ${({theme})=>theme.rBoard};
+  box-shadow: ${({theme})=>theme.shBoard};
+  display: flex; flex-direction: column;
 `;
 
-const Title = styled.h2`
-  text-align: left;
-  font-weight: 600;
-  margin: 10px 20px;
-  font-size: 18px;
-`
-
-const Area = styled.div<IAreaProps>`
-  background-color: ${(props) => props.isDraggingOver ? "#dfe6e9" : props.isDraggingFromThis ? "#b2bec3" : "transparent"};
-  flex-grow: 1;
-  transition: background-color .3s ease-in-out;
-  padding: 20px;
-`
-const Form = styled.form`
-  width: 100%;
-  input {
-    width: 100%
+const Title = styled.div<{color:string}>`
+  font-family: 'YoonchoUsanChildrenS', cursive;
+  display:flex; align-items:center; gap:10px; margin-bottom:12px;
+  .flag{
+    position:relative; padding:4px 10px; border-radius:10px;
+    background: ${({color})=>`${color}1f`}; color: ${({color})=>color};
+    font-weight:800;
   }
-`
-const Count = styled.span`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: 24px; 
-  height: 24px;
-  border-radius: 50%;
-  background-color: #fff;
-  color: #2d3436;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-  margin-right: 8px;
+  .count{
+    display:inline-flex; justify-content:center; align-items:center;
+    width:22px; height:22px; border-radius:50%; background:#fff;
+    border:1px solid rgba(0,0,0,.06); font-weight:700;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    color: ${(prop) => prop.color};
+  }
 `;
 
-const AddTaskButton = styled.button`
-  width: 90%;
-  align-self: center;
+const Area = styled.div<{isDraggingOver:boolean; isDraggingFromThis:boolean; $soft:string}>`
+  background: ${(prop) => prop.isDraggingOver ? prop.$soft : "transparent"};
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  flex-grow: 1; padding: 14px;
+  transition: background-color .2s ease;
+`;
+
+const AddTaskButton = styled.button<{ $base:string; $soft:string }>`
+  width: 80%; margin: 12px auto 0; display: block;
   padding: 10px 0;
-  margin: 12px;
-  border: 2px dashed;
-  border-radius: 10px;
-  font-weight: 500;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  &:hover {
-    background-color: rgba(162, 155, 254, 0.18);
-    transform: scale(1.02);
-  }
-  &:active {
-    transform: scale(0.98);
+  border: 2px dashed ${(prop) => prop.$base};
+  border-radius: 12px;
+  background: ${(prop) => prop.$soft};
+  color: ${(prop) => prop.$base};
+  font-family: 'YoonchoUsanChildrenS', cursive;
+  font-weight: 700; letter-spacing: .2px; cursor: pointer;
+  transition: .2s;
+  &:hover{
+    background: ${(prop)=>prop.$soft}; /* 유지 */
+    filter: brightness(0.98);
+    transform: translateY(-1px);
   }
 `;
 
 const PopupWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
   position: relative;
   width: 100%;
 `;
 
-const PopupInput = styled.div`
-  position: absolute;
-  bottom: 50px;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  animation: fadeIn 0.2s ease;
-  z-index: 5;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+const PopupInput = styled.div<{ $base:string; $soft:string; $hover:string }>`
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 56px; width: calc(100% - 28px);
+  background:#fff; border:1px solid ${({theme})=>theme.boardBorder};
+  border-radius: 12px; padding: 10px; z-index: 5;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.12);
+  animation: show .18s ease;
+  @keyframes show { from{opacity:0; transform: translate(-50%,6px);} to{opacity:1; transform: translate(-50%,0);} }
+  form{ display:grid; grid-template-columns: 1fr auto; gap: 8px; }
+  input{
+    border:1px solid #E5E1D6;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size:15px;
+    font-family: 'YoonchoUsanChildrenS', cursive;
+    &:focus{
+      outline: none;
+      border-color: ${(prop)=>prop.$base};
+      box-shadow: 0 0 0 3px ${(prop)=>prop.$soft};
     }
   }
-
-  input {
-    border: 1px solid #dfe6e9;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 14px;
-    outline: none;
-
-    &:focus {
-      border-color: #a29bfe;
-      box-shadow: 0 0 0 2px rgba(162, 155, 254, 0.2);
-    }
-  }
-
-  button {
-    background-color: #6c5ce7;
-    color: white;
+  button{
+    background: ${(prop)=>prop.$base};
+    color: #fff;
     border: none;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 14px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 700;
     cursor: pointer;
-    transition: 0.2s;
-
-    &:hover {
-      background-color: #5f43e8;
+    transition: .2s;
+    font-family: 'YoonchoUsanChildrenS', cursive;
+    &:hover{
+      background: ${(prop)=>prop.$hover};
     }
   }
+`;
+
+const MenuButton = styled.button`
+  position: absolute; top: 0; right: 0;
+  width: 28px; height: 28px;
+  display: inline-flex; justify-content: center; align-items: center;
+  border: none;
+  background-color: transparent;
+  color: ${(prop) => prop.color};
+  cursor: pointer; transition: .15s;
+  &:hover { filter: brightness(.97); }
+  svg { width: 16px; height: 16px; }
+`;
+
+const Dropdown = styled.div<{ $closing?: boolean }>`
+  position: absolute; top: 34px; right: 0; z-index: 20;
+  min-width: 160px; background: #fff;
+  border: 1px solid rgba(0,0,0,0.08); border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12); padding: 6px;
+
+  animation: ${p =>
+    p.$closing
+      ? css`menuOut .16s ease forwards`
+      : css`menuIn .16s ease`};
+
+  @keyframes menuIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  @keyframes menuOut {
+    from { opacity: 1; transform: translateY(0)    scale(1); }
+    to   { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  }
+`;
+
+const Item = styled.button`
+  width: 100%; text-align: left;
+  border: 0; background: transparent; cursor: pointer;
+  color: ${({theme})=>theme.text}; font-size: 14px;
+  padding: 10px; border-radius: 8px; display: flex; gap: 8px; align-items: center;
+  &:hover { background: rgba(0,0,0,0.04); }
+  &.danger { color: #B34747; }
+  font-family: 'YoonchoUsanChildrenS', cursive;
 `;
 
 interface IBoardProps {
   toDos: IToDo[];
   boardId: string;
-}
-
-interface IAreaProps {
-  isDraggingOver: boolean;
-  isDraggingFromThis: boolean;
+  boardIndex: number;
 }
 
 interface IForm {
   toDo: string;
 }
 
-function Board({ toDos, boardId }: IBoardProps) {
+function Board({ toDos, boardId, boardIndex }: IBoardProps) {
+  const theme = useTheme();
+  const accent = getAccent(boardIndex, theme);
+  const removeBoard = useSetAtom(removeBoardAtom);
+  const renameBoard = useSetAtom(renameBoardAtom);
+
   const setToDos = useSetAtom(toDoState);
   const [showPopup, setShowPopup] = useState(false);
-  const { register, setValue, handleSubmit } = useForm<IForm>();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [delConfirmOpen, setDelConfirmOpen] = useState(false);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const { register, setValue, handleSubmit, setFocus } = useForm<IForm>();
 
   const onValid = ({ toDo }: IForm) => {
-    const newToDo = {
-      id: Date.now(),
-      text: toDo,
-    }
-    setToDos(allBoards => {
-      return {
-        ...allBoards,
-        [boardId]: [
-          ...allBoards[boardId],
-          newToDo
-        ]
-      }
-    });
+    const newToDo = { id: Date.now(), text: toDo };
+    setToDos(allBoards => ({
+      ...allBoards,
+      [boardId]: [...(allBoards[boardId] ?? []), newToDo],
+    }));
     setValue("toDo", "");
     setShowPopup(false);
   };
 
+  const onDeleteBoard = () => setDelConfirmOpen(true);
+
+  const doDelete = () => {
+    removeBoard(boardId);
+    setDelConfirmOpen(false);
+    setMenuOpen(false);
+  };
+
+  const cancelDelete = () => setDelConfirmOpen(false);
+
+  useEffect(() => {
+    if (showPopup) {
+      requestAnimationFrame(() => setFocus("toDo"));
+    }
+  }, [showPopup, setFocus]);
+
+  useEffect(() => {
+    function onDown(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    if (menuOpen) {
+      document.addEventListener("mousedown", onDown);
+      document.addEventListener("keydown", onKey);
+    }
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const onEditBoard = () => {
+    const next = prompt("Please enter a new board name.", boardId);
+    if (!next) return;
+    renameBoard({ oldId: boardId, newId: next });
+    setMenuOpen(false);
+  };
+
   return (
     <Wrapper>
-      <Title>
-        <Count>{toDos.length}</Count>
-        {boardId}
-      </Title>
+      <div style={{ position: "relative" }} ref={menuRef}>
+        <Title color={accent.base}>
+          <span className="count">{toDos.length}</span>
+          <span className="flag">{boardId}</span>
+        </Title>
+
+        <MenuButton
+          color={accent.base}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-label="Board menu"
+          onClick={() => setMenuOpen(v => !v)}
+        >
+
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="5" r="2.1" fill="currentColor" />
+            <circle cx="12" cy="12" r="2.1" fill="currentColor" />
+            <circle cx="12" cy="19" r="2.1" fill="currentColor" />
+          </svg>
+        </MenuButton>
+
+        {menuOpen && (
+          <Dropdown role="menu">
+            <Item onClick={onEditBoard}>Edit name</Item>
+            <Item className="danger" onClick={onDeleteBoard}>Delete board</Item>
+          </Dropdown>
+        )}
+      </div>
+
       <Droppable droppableId={boardId}>
         {(provided, snapshot) => (
           <Area
@@ -187,6 +259,7 @@ function Board({ toDos, boardId }: IBoardProps) {
             isDraggingFromThis={Boolean(snapshot.draggingFromThisWith)}
             ref={provided.innerRef}
             {...provided.droppableProps}
+            $soft={accent.soft}
           >
             {toDos.map((toDo, index) => (
               <DraggableCard
@@ -201,11 +274,13 @@ function Board({ toDos, boardId }: IBoardProps) {
           </Area>
         )}
       </Droppable>
+
       <PopupWrapper>
         {showPopup && (
-          <PopupInput>
+          <PopupInput $base={accent.base} $soft={accent.soft} $hover={accent.hover}>
             <form onSubmit={handleSubmit(onValid)}>
               <input
+                id="input"
                 {...register("toDo", { required: true })}
                 type="text"
                 placeholder={`Add task on ${boardId}`}
@@ -214,10 +289,26 @@ function Board({ toDos, boardId }: IBoardProps) {
             </form>
           </PopupInput>
         )}
-        <AddTaskButton onClick={() => setShowPopup((prev) => !prev)}>
+        <AddTaskButton
+          $base={accent.base}
+          $soft={accent.soft}
+          onClick={() => setShowPopup((prev) => !prev)}
+        >
           ＋ Add new task
         </AddTaskButton>
       </PopupWrapper>
+      {delConfirmOpen && (
+        <ConfirmModal
+          title="Delete board?"
+          message={`Are you sure you want to delete the "${boardId}" board? (All cards will be removed as well.)`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          accent={accent.base}
+          onConfirm={doDelete}
+          onCancel={cancelDelete}
+        />
+      )}
+
     </Wrapper>
   );
 }

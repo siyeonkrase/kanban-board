@@ -1,12 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { ThemeProvider } from 'styled-components';
-import { darkTheme } from './theme';
+import styled, { ThemeProvider } from 'styled-components';
+import { theme } from './theme';
 import { createGlobalStyle } from "styled-components";
+import Header from './Components/Header';
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
+@font-face {
+  font-family: 'Double Trouble Sara';
+  font-style: normal;
+  font-weight: normal;
+  src:  local('Double Trouble Sara'),
+        url('/fonts/DoubleTroubleSaraRegular-1j85g.woff') format('woff');
+}
+@font-face {
+    font-family: 'YoonchoUsanChildrenS';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/YoonChildfundkoreaDaeHan.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -26,6 +40,8 @@ time, mark, audio, video {
   font-size: 100%;
   font: inherit;
   vertical-align: baseline;
+  caret-color: transparent;
+  user-select: none;
 }
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
@@ -38,6 +54,7 @@ footer, header, hgroup, main, menu, nav, section {
 }
 body {
   line-height: 1;
+  -ms-overflow-style: none;
 }
 menu, ol, ul {
   list-style: none;
@@ -60,14 +77,36 @@ table {
 body {
   font-weight: 300;
   font-family: 'Source Sans Pro', sans-serif;
-  background-color:${(props) => props.theme.bgColor};
+  /* background: linear-gradient(180deg, ${({theme})=>theme.bgA} 0%, ${({theme})=>theme.bgB} 100%); */
   color: black;
   line-height: 1.2;
+  margin: 0;
+  background: url("/images/food.png") no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
 }
 a {
   text-decoration:none;
   color:inherit;
 }
+input {
+  caret-color: black;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+.box{
+  -ms-overflow-style: none;
+}
+.box::-webkit-scrollbar{
+  display:none;
+}
+`;
+
+export const Page = styled.div`
+  min-height: 100dvh;
+  /* background: linear-gradient(180deg, ${({theme})=>theme.bgA} 0%, ${({theme})=>theme.bgB} 100%); */
+  display: flex; flex-direction: column;
 `;
 
 const root = ReactDOM.createRoot(
@@ -75,9 +114,12 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   // <React.StrictMode>
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
-      <App />
+        <Page>
+          <Header />
+          <App />
+        </Page>
     </ThemeProvider>
   // </React.StrictMode>
 );

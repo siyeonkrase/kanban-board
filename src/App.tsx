@@ -15,10 +15,28 @@ const Wrapper = styled.div`
 
 const Boards = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  gap: 10px;
+  gap: 16px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  & > * {
+    flex: 0 0 min(88vw, 360px);
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 768px) {
+    overflow: visible;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+
+    & > * {
+      flex: 0 0 320px;
+      scroll-snap-align: none;
+    }
+  }
 `;
 
 function App() {

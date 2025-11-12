@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
+import { Icon } from "./Icon";
 
 const Overlay = styled.div`
   position: fixed; inset: 0; z-index: 1000;
@@ -73,7 +74,8 @@ export default function ConfirmModal({
       }}
     >
       <Box $accent={accent} role="dialog" aria-modal="true" aria-label={title}>
-        <h3>{title}</h3>
+        <Icon src={title} size={55}/>
+        <br/><br/>
         <p>{message}</p>
         <div className="row">
           <button className="cancel" onClick={onCancel}>{cancelLabel}</button>

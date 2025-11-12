@@ -7,6 +7,7 @@ import { useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { getAccent } from "../colorMap";
 import ConfirmModal from "./ConfirmModal";
+import InputModal from "./InputModal";
 
 const Wrapper = styled.div`
   width: 320px; min-height: 360px;
@@ -165,7 +166,7 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [delConfirmOpen, setDelConfirmOpen] = useState(false);
-  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { register, setValue, handleSubmit, setFocus } = useForm<IForm>();
@@ -190,6 +191,14 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
 
   const cancelDelete = () => setDelConfirmOpen(false);
 
+  const onEditBoard = () => setEditOpen(true);
+
+  const doRename = (nextName: string) => {
+    renameBoard({ oldId: boardId, newId: nextName });
+    setEditOpen(false);
+    setMenuOpen(false);
+  }
+
   useEffect(() => {
     if (showPopup) {
       requestAnimationFrame(() => setFocus("toDo"));
@@ -213,13 +222,6 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
       document.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
-
-  const onEditBoard = () => {
-    const next = prompt("Please enter a new board name.", boardId);
-    if (!next) return;
-    renameBoard({ oldId: boardId, newId: next });
-    setMenuOpen(false);
-  };
 
   return (
     <Wrapper>
@@ -274,7 +276,6 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
           </Area>
         )}
       </Droppable>
-
       <PopupWrapper>
         {showPopup && (
           <PopupInput $base={accent.base} $soft={accent.soft} $hover={accent.hover}>
@@ -299,7 +300,7 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
       </PopupWrapper>
       {delConfirmOpen && (
         <ConfirmModal
-          title="Delete board?"
+          title="/images/icon-gomibako.png"
           message={`Are you sure you want to delete the "${boardId}" board? (All cards will be removed as well.)`}
           confirmLabel="Delete"
           cancelLabel="Cancel"
@@ -308,7 +309,18 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
           onCancel={cancelDelete}
         />
       )}
-
+      {editOpen && (
+        <InputModal
+          title="/images/icon-pencil.png"
+          label="Please enter a new board name."
+          initialValue={boardId}
+          confirmLabel="Save"
+          cancelLabel="Cancel"
+          accent={accent.base}
+          onConfirm={doRename}
+          onCancel={() => setEditOpen(false)}
+        />
+      )}
     </Wrapper>
   );
 }

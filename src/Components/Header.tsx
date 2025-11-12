@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Icon } from "./Icon";
 
 const Wrapper = styled.header`
   position: sticky; top: 0; z-index: 50;
@@ -24,6 +25,7 @@ export default function Header(){
   return (
     <Wrapper>
       <Brand><h1>BentoBoard</h1></Brand>
+      <Icon src={"/images/icon-humberger.png"} size={35} />
     </Wrapper>
   );
 }

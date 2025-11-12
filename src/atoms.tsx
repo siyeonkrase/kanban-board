@@ -17,36 +17,6 @@ export const toDoState = atomWithStorage<IToDoState>("board", {
   Thursday: [],
 });
 
-// export const addToDoAtom = atom(
-//   null,
-//   (get, set, { column, text }: { column: string; text: string }) => {
-//     const board = structuredClone(get(toDoState));
-//     const list = board[column] ?? (board[column] = []);
-//     list.unshift({ id: Date.now(), text });
-//     set(toDoState, board);
-//   }
-// );
-
-// export const moveToDoAtom = atom(
-//   null,
-//   (
-//     get,
-//     set,
-//     {
-//       from,
-//       to,
-//     }: { from: { column: string; index: number }; to: { column: string; index: number } }
-//   ) => {
-//     console.log("?")
-//     const board = structuredClone(get(toDoState));
-//     const fromList = board[from.column] ?? (board[from.column] = []);
-//     const toList = board[to.column] ?? (board[to.column] = []);
-//     const [moved] = fromList.splice(from.index, 1);
-//     toList.splice(to.index, 0, moved);
-//     set(toDoState, board);
-//   }
-// );
-
 export const removeToDoAtom = atom(
   null,
   (get, set, { column, index }: { column: string; index: number }) => {

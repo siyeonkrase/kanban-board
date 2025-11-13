@@ -1,12 +1,6 @@
 export type Accent = { base: string; soft: string; hover: string };
 
-export const getAccent = (index: number, theme: any): Accent => {
-  const palette = [
-    theme.accents.a,
-    theme.accents.b,
-    theme.accents.c,
-    theme.accents.d,
-  ];
-
-  return palette[index % palette.length] || theme.accents.default;
+export const getAccent = (accentId: string, theme: any): Accent => {
+  const map = theme.accents as Record<string, Accent>;
+  return map[accentId] ?? map.default;
 };

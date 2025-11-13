@@ -7,6 +7,7 @@ interface IconProps {
   rounded?: boolean;
   onClick?: () => void;
   className?: string;
+  focus?: string;
 }
 
 export const Icon = styled.img<Pick<IconProps, "size" | "rounded">>`

@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { Droppable } from "@hello-pangea/dnd";
+import { DraggableProvidedDragHandleProps, Droppable } from "@hello-pangea/dnd";
 import DraggableCard from "./DraggableCard";
 import styled, { css, useTheme } from "styled-components";
 import { IToDo, toDoState, removeBoardAtom, renameBoardAtom } from "../atoms";
@@ -8,15 +8,33 @@ import { useEffect, useRef, useState } from "react";
 import { getAccent } from "../colorMap";
 import ConfirmModal from "./ConfirmModal";
 import InputModal from "./InputModal";
+import { Icon } from "./Icon";
 
 const Wrapper = styled.div`
-  width: 320px; min-height: 360px;
+  width: 460px; min-height: 550px;
   padding: 14px 14px 18px;
   background: ${({theme})=>theme.boardBg};
   border: 1px solid ${({theme})=>theme.boardBorder};
   border-radius: ${({theme})=>theme.rBoard};
   box-shadow: ${({theme})=>theme.shBoard};
   display: flex; flex-direction: column;
+
+  @media (max-width: 480px) {
+    width: 260px;
+    min-height: 360px;
+    padding: 12px;
+    margin-left: 20px;
+  }
+
+  @media (min-width: 481px) and (max-width: 1024px) {
+    width: 300px;
+    min-height: 420px;
+  }
+
+  @media (min-width: 1500px) {
+    width: 380px;
+    min-height: 480px;
+  }
 `;
 
 const Title = styled.div<{color:string}>`
@@ -55,7 +73,7 @@ const AddTaskButton = styled.button<{ $base:string; $soft:string }>`
   font-weight: 700; letter-spacing: .2px; cursor: pointer;
   transition: .2s;
   &:hover{
-    background: ${(prop)=>prop.$soft}; /* 유지 */
+    background: ${(prop)=>prop.$soft};
     filter: brightness(0.98);
     transform: translateY(-1px);
   }
@@ -146,19 +164,30 @@ const Item = styled.button`
   font-family: 'YoonchoUsanChildrenS', cursive;
 `;
 
+const HandleBtn = styled.button`
+  position: absolute; top: 0; right: 30px;
+  width: 28px; height: 28px;
+  background-color: transparent;
+  border: none;
+  display:flex; align-items:center; justify-content:center;
+  cursor: grab;
+  &:active { cursor: grabbing; }
+`;
+
 interface IBoardProps {
   toDos: IToDo[];
   boardId: string;
-  boardIndex: number;
+  accentId: string;
+  handleProps?: DraggableProvidedDragHandleProps;
 }
 
 interface IForm {
   toDo: string;
 }
 
-function Board({ toDos, boardId, boardIndex }: IBoardProps) {
+function Board({ toDos, boardId, accentId, handleProps }: IBoardProps) {
   const theme = useTheme();
-  const accent = getAccent(boardIndex, theme);
+  const accent = getAccent(accentId, theme);
   const removeBoard = useSetAtom(removeBoardAtom);
   const renameBoard = useSetAtom(renameBoardAtom);
 
@@ -173,10 +202,19 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
 
   const onValid = ({ toDo }: IForm) => {
     const newToDo = { id: Date.now(), text: toDo };
-    setToDos(allBoards => ({
-      ...allBoards,
-      [boardId]: [...(allBoards[boardId] ?? []), newToDo],
-    }));
+    setToDos(allBoards => {
+      const meta = allBoards[boardId] ?? {
+        accentId: "a",
+        items: [],
+      };
+      return {
+        ...allBoards,
+        [boardId]: {
+          ...meta,
+          items: [...meta.items, newToDo],
+        },
+      };
+    });
     setValue("toDo", "");
     setShowPopup(false);
   };
@@ -193,8 +231,8 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
 
   const onEditBoard = () => setEditOpen(true);
 
-  const doRename = (nextName: string) => {
-    renameBoard({ oldId: boardId, newId: nextName });
+  const doRename = (nextName: string, nextAccentId?: string) => {
+    renameBoard({ oldId: boardId, newId: nextName, accentId: nextAccentId });
     setEditOpen(false);
     setMenuOpen(false);
   }
@@ -206,6 +244,7 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
   }, [showPopup, setFocus]);
 
   useEffect(() => {
+    console.log("handleProps for", boardId, handleProps);
     function onDown(e: MouseEvent) {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
@@ -231,6 +270,10 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
           <span className="flag">{boardId}</span>
         </Title>
 
+        <HandleBtn aria-label="Reorder board" {...handleProps}>
+          <Icon src="/images/icon-humberger.png"></Icon>
+        </HandleBtn>
+
         <MenuButton
           color={accent.base}
           aria-haspopup="menu"
@@ -238,12 +281,7 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
           aria-label="Board menu"
           onClick={() => setMenuOpen(v => !v)}
         >
-
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="5" r="2.1" fill="currentColor" />
-            <circle cx="12" cy="12" r="2.1" fill="currentColor" />
-            <circle cx="12" cy="19" r="2.1" fill="currentColor" />
-          </svg>
+          <Icon src="/images/sanshokudango.png"></Icon>
         </MenuButton>
 
         {menuOpen && (
@@ -270,6 +308,7 @@ function Board({ toDos, boardId, boardIndex }: IBoardProps) {
                 toDoId={toDo.id}
                 toDoText={toDo.text}
                 boardId={boardId}
+                color={accent.base}
               />
             ))}
             {provided.placeholder}

@@ -1,5 +1,10 @@
 import styled from "styled-components";
 import { Icon } from "./Icon";
+import { useState } from "react";
+import InputModal from "./InputModal";
+import { addBoardAtom } from "../atoms";
+import { useSetAtom } from "jotai";
+import { accentOptions } from "../theme";
 
 const Wrapper = styled.header`
   position: sticky; top: 0; z-index: 50;
@@ -21,11 +26,73 @@ const Brand = styled.div`
   }
 `;
 
+const ColorPicker = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+`;
+
+const Circle = styled.button<{ color: string; selected: boolean }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: ${(p) => p.color};
+  border: 2px solid
+    ${(p) => (p.selected ? p.color : "rgba(0,0,0,0.08)")};
+  box-shadow: ${(p) =>
+    p.selected
+      ? `0 0 0 4px ${p.color}33`
+      : "0 2px 4px rgba(0,0,0,0.06)"};
+
+  cursor: pointer;
+  transition: 0.18s ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+`;
+
 export default function Header(){
+  const [addOpen, setAddOpen] = useState(false);
+  const addBoard = useSetAtom(addBoardAtom);
+  const [selected, setSelected] = useState("b");
+  
+  const onAddBoard = () => {
+    setAddOpen(true);
+  }
+  const doAddBoard = (name: string, accentId?: string) => {
+    addBoard({name, accentId});
+    setAddOpen(false);
+  };
+  
+  const homeBtn = () => {
+    const onigiri = document.getElementById('home');
+    onigiri?.setAttribute("src", "/images/onigirisan.png")
+  }
+
+  const onHey = () => {
+    const onigiri = document.getElementById('home');
+    onigiri?.setAttribute("src", "/images/onigirisan2.png")
+    setTimeout(homeBtn, 100);
+    
+  }
+
   return (
     <Wrapper>
-      <Brand><h1>BentoBoard</h1></Brand>
-      <Icon src={"/images/icon-humberger.png"} size={35} />
+      <Brand><Icon id="home" src={"/images/onigirisan.png"} size={45} onClick={onHey}/><h1>BentoBoard</h1></Brand>
+      <Icon src={"/images/plus.png"} size={45} onClick={onAddBoard}/>
+      {addOpen && (
+        <InputModal
+          title="/images/yakisanma.png"
+          label="Please enter a board name."
+          initialValue=""
+          confirmLabel="Create"
+          onConfirm={doAddBoard}
+          onCancel={() => setAddOpen(false)}
+          accent="pink"
+        />
+      )}
     </Wrapper>
   );
 }

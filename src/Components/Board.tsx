@@ -271,7 +271,7 @@ function Board({ toDos, boardId, accentId, handleProps }: IBoardProps) {
         </Title>
 
         <HandleBtn aria-label="Reorder board" {...handleProps}>
-          <Icon src="/images/icon-humberger.png"></Icon>
+          <Icon src="images/icon-humberger.png"></Icon>
         </HandleBtn>
 
         <MenuButton
@@ -281,7 +281,7 @@ function Board({ toDos, boardId, accentId, handleProps }: IBoardProps) {
           aria-label="Board menu"
           onClick={() => setMenuOpen(v => !v)}
         >
-          <Icon src="/images/sanshokudango.png"></Icon>
+          <Icon src="images/sanshokudango.png"></Icon>
         </MenuButton>
 
         {menuOpen && (
@@ -339,7 +339,7 @@ function Board({ toDos, boardId, accentId, handleProps }: IBoardProps) {
       </PopupWrapper>
       {delConfirmOpen && (
         <ConfirmModal
-          title="/images/icon-gomibako.png"
+          title="images/icon-gomibako.png"
           message={`Are you sure you want to delete the "${boardId}" board? (All cards will be removed as well.)`}
           confirmLabel="Delete"
           cancelLabel="Cancel"
@@ -350,7 +350,7 @@ function Board({ toDos, boardId, accentId, handleProps }: IBoardProps) {
       )}
       {editOpen && (
         <InputModal
-          title="/images/icon-pencil.png"
+          title="images/icon-pencil.png"
           label="Please enter a new board name."
           initialValue={boardId}
           confirmLabel="Save"

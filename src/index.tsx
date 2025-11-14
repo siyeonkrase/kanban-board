@@ -13,7 +13,7 @@ const GlobalStyle = createGlobalStyle`
   font-style: normal;
   font-weight: normal;
   src:  local('Double Trouble Sara'),
-        url('/fonts/DoubleTroubleSaraRegular-1j85g.woff') format('woff');
+        url('fonts/DoubleTroubleSaraRegular-1j85g.woff') format('woff');
 }
 @font-face {
     font-family: 'YoonchoUsanChildrenS';
@@ -81,7 +81,7 @@ body {
   color: black;
   line-height: 1.2;
   margin: 0;
-  background: url("/images/food.png") no-repeat center center fixed;
+  background: url("images/food.png") no-repeat center center fixed;
   background-size: cover;
   background-attachment: fixed;
 }

@@ -81,7 +81,7 @@ export default function Header(){
   return (
     <Wrapper>
       <Brand><Icon id="home" src={"/images/onigirisan.png"} size={45} onClick={onHey}/><h1>BentoBoard</h1></Brand>
-      <Icon src={"/images/plus.png"} size={45} onClick={onAddBoard}/>
+      <Icon src={"images/plus.png"} size={45} onClick={onAddBoard}/>
       {addOpen && (
         <InputModal
           title="/images/yakisanma.png"

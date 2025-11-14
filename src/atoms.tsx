@@ -16,14 +16,59 @@ interface IToDoState {
 }
 
 export const toDoState = atomWithStorage<IToDoState>("board", {
-  "To Do":  { accentId: "a", items: [] },
-  Doing:    { accentId: "b", items: [] },
-  Done:     { accentId: "c", items: [] },
+  Monday:  { accentId: "a",
+    items: [
+      {
+        "id": 1763079215987,
+        "text": "Set personal revenue targets"
+      },
+      {
+        "id": 1763079223140,
+        "text": "Outreach"
+      },
+      {
+        "id": 1763079230740,
+        "text": "Schedule call with Mike"
+      },
+      {
+        "id": 1763079246124,
+        "text": "Customer discovery call RECAP"
+      }
+    ] },
+  Tuesday:  { accentId: "b",
+    items: [
+      {
+        "id": 1763079289796,
+        "text": "Create presentation for Unicorn Corp Meeting next week"
+      },
+      {
+        "id": 1763079298591,
+        "text": "Review client contract"
+      }
+    ] },
+  Wednesday:  { accentId: "c",
+    items: [
+      {
+        "id": 1763079251102,
+        "text": "Book conference room"
+      },
+      {
+        "id": 1763079255524,
+        "text": "Prepare demo for sales on-site"
+      }
+    ] },
+  Thursday:  { accentId: "d",
+    items: [
+      {
+        "id": 1763079260469,
+        "text": "Outreach"
+      }
+    ] },
 });
 
 export const boarderOrderState = atomWithStorage<string[]>(
   "borderOrder",
-  ["To Do", "Doing", "Done"]
+  ["Monday", "Tuesday", "Wednesday", "Thursday"]
 );
 
 export const removeToDoAtom = atom(

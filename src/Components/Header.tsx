@@ -68,23 +68,23 @@ export default function Header(){
   
   const homeBtn = () => {
     const onigiri = document.getElementById('home');
-    onigiri?.setAttribute("src", "/images/onigirisan.png")
+    onigiri?.setAttribute("src", "images/onigirisan.png")
   }
 
   const onHey = () => {
     const onigiri = document.getElementById('home');
-    onigiri?.setAttribute("src", "/images/onigirisan2.png")
+    onigiri?.setAttribute("src", "images/onigirisan2.png")
     setTimeout(homeBtn, 100);
     
   }
 
   return (
     <Wrapper>
-      <Brand><Icon id="home" src={"/images/onigirisan.png"} size={45} onClick={onHey}/><h1>BentoBoard</h1></Brand>
+      <Brand><Icon id="home" src={"images/onigirisan.png"} size={45} onClick={onHey}/><h1>BentoBoard</h1></Brand>
       <Icon src={"images/plus.png"} size={45} onClick={onAddBoard}/>
       {addOpen && (
         <InputModal
-          title="/images/yakisanma.png"
+          title="images/yakisanma.png"
           label="Please enter a board name."
           initialValue=""
           confirmLabel="Create"

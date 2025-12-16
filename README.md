@@ -1,4 +1,6 @@
 ## Kanban Board
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/db17d5c9-1ba6-47fb-b7d7-bb26d358c0d6" />
+
 
 An interactive Kanban-style task management web application designed to organize workflows through boards and draggable task cards.
 

@@ -12,7 +12,7 @@ An interactive Kanban-style task management web application designed to organize
 - Fully responsive UI for desktop and mobile usage
 
 ### Tech Stack
-React, TypeScript, styled-components, HTML, CSS
+React, TypeScript, Styled-Components, HTML, CSS
 
 ### Live Demo
 https://siyeonkrase.github.io/kanban-board
